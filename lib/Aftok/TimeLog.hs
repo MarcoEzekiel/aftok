@@ -127,27 +127,34 @@ payouts dep ptime (WorkIndex widx) =
 
   in  Payouts $ fmap ((/ toSeconds totalTime) . toSeconds) keyTimes
 
-workIndex :: (Ord a, Foldable f) => f (LogEntry a) -> (WorkIndex a)
+workIndex :: forall a f. (Ord a, Foldable f) => f (LogEntry a) -> (WorkIndex a)
 workIndex logEntries =
   let sortedEntries = F.foldr H.insert H.empty logEntries
       rawIndex = F.foldl' appendLogEntry MS.empty sortedEntries
 
+      accum :: (CreditTo a)
+            -> [Either LogEvent Interval]
+            -> Map (CreditTo a) (NonEmpty Interval)
+            -> Map (CreditTo a) (NonEmpty Interval)
       accum k l m = case nonEmpty (rights l) of
         Just l' -> MS.insert k l' m
         Nothing -> m
 
   in  WorkIndex $ MS.foldrWithKey accum MS.empty rawIndex
 
-{-|
- - The values of the raw index map are either complete intervals (which may be
- - extended if a new start is encountered at the same instant as the end of the
- - interval) or start events awaiting completion.
- -}
+-- |
+-- The values of the raw index map are either complete intervals (which may be
+-- extended if a new start is encountered at the same instant as the end of the
+-- interval) or start events awaiting completion.
+--
+-- This should really be instead:
+-- type RawIndex a = Map (CreditTo a) ([Interval], Maybe LogEvent)
 type RawIndex a = Map (CreditTo a) [Either LogEvent Interval]
 
 appendLogEntry :: (Ord a) => RawIndex a -> LogEntry a -> RawIndex a
 appendLogEntry idx (LogEntry k ev _) =
-  let combine (StartWork t) (StopWork t') | t' > t = Right $ Interval t t'
+  let combine :: LogEvent -> LogEvent -> Either LogEvent Interval
+      combine (StartWork t) (StopWork t') | t' > t = Right $ Interval t t'
       combine (e1 @ (StartWork _)) (e2 @ (StartWork _)) = Left $ max e1 e2 -- ignore redundant starts
       combine (e1 @ (StopWork  _)) (e2 @ (StopWork  _)) = Left $ min e1 e2 -- ignore redundant ends
       combine _ e2 = Left e2
@@ -157,6 +164,7 @@ appendLogEntry idx (LogEntry k ev _) =
       extension ival (StartWork t) | containsInclusive t ival = Just $ StartWork (ival ^. start)
       extension _ _ = Nothing
 
+      ivals :: [Either LogEvent Interval]
       ivals = case MS.lookup k idx of
         -- if it is possible to extend an interval at the top of the stack
         -- because the end of that interval is the same

@@ -5,7 +5,7 @@ if [ -f ".env" ]; then
 fi
 
 if [ -z "${AFTOK_HOST}" ]; then 
-  AFTOK_HOST="aftok.com"
+  AFTOK_HOST="172.21.0.3"
 fi
 
 read -p "Username: " USER
@@ -18,4 +18,3 @@ curl --verbose \
   --header 'Content-Type: application/json' \
   --data "{\"username\":\"$USER\", \"password\":\"$PASS\", \"recoveryType\": \"email\", \"recoveryEmail\": \"$EMAIL\", \"captchaToken\":\"FAKE\"}" \
   "https://$AFTOK_HOST/api/register"
-

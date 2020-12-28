@@ -87,6 +87,21 @@ sudo chown -R 2001.2001 local/conf/zcashd
 ~~~
 
 Database Initialization
+=======
+Config files
+------------
+
+Sample config files are available in the `conf` directory.
+Copy these files to `local/conf/server` and remove the .example 
+extension from the filenames.
+
+You will also need to generate a self-signed SSL certificate for
+local development.
+
+TODO: self-signed cert instructions
+
+
+Database initialization
 -----------------------
 
 When you first set up your local docker environment for aftok development, the

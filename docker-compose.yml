@@ -1,6 +1,7 @@
 version: "3.7"
 
 services:
+
   aftok:
     image: aftok/aftok-server:latest
     container_name: aftok-server
@@ -17,6 +18,9 @@ services:
       - front-tier
       - back-tier
     init: true
+    entrypoint: "/etc/aftok/start_server.sh"
+    command: ["aftok-db", "/opt/aftok/bin/aftok-server"]
+
 
   nginx:
     image: nginx:latest
@@ -39,6 +43,9 @@ services:
       - type: bind
         source: ./client/dist/
         target: /opt/static/app
+      - type: bind
+        source: ./newclient/dist/build
+        target: /opt/static/app2
     networks:
       - front-tier
 

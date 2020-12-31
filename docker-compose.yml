@@ -44,7 +44,7 @@ services:
         source: ./client/dist/
         target: /opt/static/app
       - type: bind
-        source: ./newclient/dist/build
+        source: ./reactclient/build
         target: /opt/static/app2
     networks:
       - front-tier

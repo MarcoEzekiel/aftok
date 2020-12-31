@@ -18,9 +18,6 @@ services:
       - front-tier
       - back-tier
     init: true
-    entrypoint: "/etc/aftok/start_server.sh"
-    command: ["aftok-db", "/opt/aftok/bin/aftok-server"]
-
 
   nginx:
     image: nginx:latest
